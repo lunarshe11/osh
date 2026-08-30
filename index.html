@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>9MAYA Casino - Вход</title>
+    <link rel="stylesheet" href="cjs/style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="logo">
+            <h1>9MAYA</h1>
+            <p>CASINO</p>
+        </div>
+        
+        <div class="disclaimer">
+            ⚠️ ВНИМАНИЕ: ЭТО ФЕЙК. Все деньги виртуальные. Никаких реальных ставок.
+        </div>
+
+        <div class="balance-card">
+            <p class="balance-label">Твой баланс:</p>
+            <div class="balance-amount" id="balance">100 Ꚛ</div>
+        </div>
+
+        <button class="play-btn" id="playBtn">
+            🎰 ИГРАТЬ
+        </button>
+
+        <div class="footer">
+            <p>© 2024 9MAYA Casino. Все права защищены.</p>
+        </div>
+    </div>
+
+    <script>
+        const balance = parseInt(localStorage.getItem('maya_balance')) || 100;
+        document.getElementById('balance').textContent = balance + ' Ꚛ';
+        
+        document.getElementById('playBtn').addEventListener('click', () => {
+            window.location.href = 'game.html';
+        });
+    </script>
+</body>
+</html>

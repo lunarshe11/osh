@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>9MAYA Casino 3D</title>
+    <link rel="stylesheet" href="cjs/game.css">
+</head>
+<body>
+    <div id="hud">
+        <div class="hud-balance">Ꚛ <span id="hudBalance">100</span></div>
+        <button class="btn-exit" id="exitBtn">← ВЫХОД</button>
+    </div>
+    <div id="fps">FPS: <span id="fpsVal">0</span></div>
+
+    <div id="joystick-left"><div class="knob" id="leftKnob"></div></div>
+    <div id="joystick-right"><div class="knob" id="rightKnob"></div></div>
+
+    <div id="interact-hint">Нажми чтобы ВОЙТИ</div>
+
+    <div id="casino-ui">
+        <div class="ui-header">
+            <div class="ui-balance">Ꚛ <span id="uiBalance">100</span> Эхо</div>
+            <button class="ui-close" id="uiClose">✕</button>
+        </div>
+        
+        <div class="bonus-bar" id="bonusBar">🔥 МНОЖИТЕЛЬ x<span id="bonusMult">2</span></div>
+        
+        <div class="clicker-box">
+            <div class="clicker-title"> СОБИРАЙ ЭХО ⚡</div>
+            <div class="clicker-btn" id="clickerBtn">Ꚛ</div>
+            <div style="margin-top:6px; font-size:10px; color:#888;">+1 за клик</div>
+        </div>
+        
+        <div class="games-grid">
+            <div class="game-card" data-game="slot">
+                <div class="icon">🎰</div>
+                <div class="title">СЛОТ</div>
+                <div class="desc">3 в ряд = x20</div>
+            </div>
+            <div class="game-card" data-game="wheel">
+                <div class="icon">🎡</div>
+                <div class="title">КОЛЕСО 9</div>
+                <div class="desc">x2, x5, x9</div>
+            </div>
+            <div class="game-card" data-game="rps">
+                <div class="icon">🗿</div>
+                <div class="title">КАМЕНЬ-БОГ</div>
+                <div class="desc">Победи ИИ x3</div>
+            </div>
+            <div class="game-card" data-game="pyramid">
+                <div class="icon">🔺</div>
+                <div class="title">ПИРАМИДА</div>
+                <div class="desc">Найди камень x2</div>
+            </div>
+        </div>
+        
+        <div class="history-box">
+            <div class="history-header">
+                <div class="history-title">📜 ПОСЛЕДНИЕ ХОДЫ</div>
+                <button class="history-clear" id="clearHistory">ОЧИСТИТЬ</button>
+            </div>
+            <div class="history-list" id="historyList">
+                <div style="color:#555; font-size:10px;">Пока пусто</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="game-modal" id="modal-slot">
+        <div class="modal-box">
+            <button class="modal-close-btn" data-close>✕</button>
+            <div class="modal-title">🎰 СЛОТ</div>
+            <div class="slot-reels">
+                <div class="slot-reel" id="reel1">👁️</div>
+                <div class="slot-reel" id="reel2">👁️</div>
+                <div class="slot-reel" id="reel3">👁️</div>
+            </div>
+            <div class="bet-row">
+                <input type="number" class="bet-input" id="slotBet" value="10" min="10" step="10">
+                <span class="bet-currency">Ꚛ</span>
+            </div>
+            <button class="action-btn" id="slotSpin">КРУТИТЬ</button>
+            <div class="msg-box" id="slotMsg"></div>
+        </div>
+    </div>
+
+    <div class="game-modal" id="modal-wheel">
+        <div class="modal-box">
+            <button class="modal-close-btn" data-close>✕</button>
+            <div class="modal-title">🎡 КОЛЕСО 9</div>
+            <div class="wheel-wrap">
+                <div class="wheel-pointer"></div>
+                <div class="wheel-circle" id="wheelCircle">
+                    <div class="wheel-number" style="transform: rotate(0deg) translate(0, -65px) rotate(0deg);">2</div>
+                    <div class="wheel-number" style="transform: rotate(40deg) translate(0, -65px) rotate(-40deg);">5</div>
+                    <div class="wheel-number" style="transform: rotate(80deg) translate(0, -65px) rotate(-80deg);">9</div>
+                    <div class="wheel-number" style="transform: rotate(120deg) translate(0, -65px) rotate(-120deg);">2</div>
+                    <div class="wheel-number" style="transform: rotate(160deg) translate(0, -65px) rotate(-160deg);">5</div>
+                    <div class="wheel-number" style="transform: rotate(200deg) translate(0, -65px) rotate(-200deg);">9</div>
+                    <div class="wheel-number" style="transform: rotate(240deg) translate(0, -65px) rotate(-240deg);">2</div>
+                    <div class="wheel-number" style="transform: rotate(280deg) translate(0, -65px) rotate(-280deg);">5</div>
+                    <div class="wheel-number" style="transform: rotate(320deg) translate(0, -65px) rotate(-320deg);">9</div>
+                </div>
+            </div>
+            <div class="bet-row">
+                <input type="number" class="bet-input" id="wheelBet" value="10" min="10" step="10">
+                <span class="bet-currency">Ꚛ</span>
+            </div>
+            <button class="action-btn" id="wheelSpin">КРУТИТЬ</button>
+            <div class="msg-box" id="wheelMsg"></div>
+        </div>
+    </div>
+
+    <div class="game-modal" id="modal-rps">
+        <div class="modal-box">
+            <button class="modal-close-btn" data-close>✕</button>
+            <div class="modal-title">🗿 КАМЕНЬ-БОГ</div>
+            <div class="rps-result" id="rpsResult">Выбери</div>
+            <div class="rps-btns">
+                <button class="rps-btn" data-choice="rock">🗿</button>
+                <button class="rps-btn" data-choice="scissors">✂️</button>
+                <button class="rps-btn" data-choice="god">👁️</button>
+            </div>
+            <div class="bet-row">
+                <input type="number" class="bet-input" id="rpsBet" value="10" min="10" step="10">
+                <span class="bet-currency">Ꚛ</span>
+            </div>
+            <div class="msg-box" id="rpsMsg"></div>
+        </div>
+    </div>
+
+    <div class="game-modal" id="modal-pyramid">
+        <div class="modal-box">
+            <button class="modal-close-btn" data-close>✕</button>
+            <div class="modal-title">🔺 ПИРАМИДА</div>
+            <div style="text-align:center; font-size:10px; color:#888; margin-bottom:6px;">Где камень?</div>
+            <div class="cups-row" id="cupsRow">
+                <div class="cup-btn" data-cup="0">🏺</div>
+                <div class="cup-btn" data-cup="1">🏺</div>
+                <div class="cup-btn" data-cup="2"></div>
+            </div>
+            <div class="bet-row">
+                <input type="number" class="bet-input" id="pyrBet" value="10" min="10" step="10">
+                <span class="bet-currency">Ꚛ</span>
+            </div>
+            <div class="msg-box" id="pyrMsg"></div>
+        </div>
+    </div>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "cannon-es": "https://unpkg.com/cannon-es@0.20.0/dist/cannon-es.js"
+            }
+        }
+    </script>
+
+    <script type="module" src="cjs/script.js"></script>
+</body>
+</html>
