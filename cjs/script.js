@@ -37,20 +37,26 @@ ground.receiveShadow = true;
 scene.add(ground);
 scene.add(new THREE.GridHelper(80, 40, 0x444466, 0x222244).translateY(0.01));
 
+// ---------- КАЗИНО (3D) ----------
 const casino = new THREE.Group();
 const roomW = 10, roomD = 10, roomH = 5;
 const wallMat = new THREE.MeshStandardMaterial({ color: 0x444455, roughness: 0.7 });
-new THREE.TextureLoader().load('https://loliapi.com/acg', (tex) => {
-    wallMat.map = tex;
-    wallMat.needsUpdate = true;
-});
+// Загружаем текстуры для постеров
+const textureLoader = new THREE.TextureLoader();
+const logoTexture = textureLoader.load('i/9maya.jpg');
+const posterTextures = [];
+for (let i = 1; i <= 7; i++) {
+    posterTextures.push(textureLoader.load(`i/${i}.jpg`));
+}
 
+// Пол
 const intFloor = new THREE.Mesh(new THREE.PlaneGeometry(roomW - 0.4, roomD - 0.4), new THREE.MeshStandardMaterial({ color: 0x2a2a3e }));
 intFloor.rotation.x = -Math.PI / 2;
 intFloor.position.y = 0.01;
 intFloor.receiveShadow = true;
 casino.add(intFloor);
 
+// Стены
 const backWall = new THREE.Mesh(new THREE.BoxGeometry(roomW, roomH, 0.3), wallMat);
 backWall.position.set(0, roomH/2, -roomD/2);
 casino.add(backWall);
@@ -75,24 +81,23 @@ const frontTop = new THREE.Mesh(new THREE.BoxGeometry(4, 1.5, 0.3), wallMat);
 frontTop.position.set(0, roomH - 0.75, roomD/2);
 casino.add(frontTop);
 
+// Крыша
 const roof = new THREE.Mesh(new THREE.BoxGeometry(roomW + 1, 0.3, roomD + 1), new THREE.MeshStandardMaterial({ color: 0x1a1a2e }));
 roof.position.set(0, roomH + 0.15, 0);
 casino.add(roof);
 
+// Дверь
 const doorFrame = new THREE.Mesh(new THREE.BoxGeometry(4.2, 3.7, 0.1), new THREE.MeshStandardMaterial({ color: 0x4ecdc4, emissive: 0x4ecdc4, emissiveIntensity: 0.5 }));
 doorFrame.position.set(0, 1.85, roomD/2 + 0.15);
 casino.add(doorFrame);
 
-const cvs = document.createElement('canvas'); cvs.width = 256; cvs.height = 64;
-const ctx = cvs.getContext('2d');
-ctx.fillStyle = '#0b0b1a'; ctx.fillRect(0, 0, 256, 64);
-ctx.strokeStyle = '#ffd700'; ctx.lineWidth = 3; ctx.strokeRect(3, 3, 250, 58);
-ctx.fillStyle = '#ffd700'; ctx.font = 'bold 36px Arial'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-ctx.fillText('9MAYA', 128, 32);
-const sign = new THREE.Mesh(new THREE.PlaneGeometry(5, 1.2), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(cvs) }));
+// Вывеска 9MAYA (используем логотип)
+const signMat = new THREE.MeshBasicMaterial({ map: logoTexture });
+const sign = new THREE.Mesh(new THREE.PlaneGeometry(5, 1.2), signMat);
 sign.position.set(0, roomH + 0.5, roomD/2 + 0.2);
 casino.add(sign);
 
+// Свет
 const intLight = new THREE.PointLight(0xffaa00, 1.5, 15);
 intLight.position.set(0, 4, 0);
 casino.add(intLight);
@@ -100,11 +105,13 @@ const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.2, 8, 8), new THREE.MeshB
 bulb.position.set(0, 4, 0);
 casino.add(bulb);
 
+// Стол
 const table = new THREE.Mesh(new THREE.BoxGeometry(3, 0.8, 1.5), new THREE.MeshStandardMaterial({ color: 0x5C4033 }));
 table.position.set(-2, 0.4, -3);
 table.castShadow = true;
 casino.add(table);
 
+// Монитор с логотипом 9MAYA
 const monStand = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.15, 0.4, 8), new THREE.MeshStandardMaterial({ color: 0x333333 }));
 monStand.position.set(-2, 1, -3);
 casino.add(monStand);
@@ -113,16 +120,12 @@ const monFrame = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.8, 0.1), new THREE.
 monFrame.position.set(-2, 1.5, -3);
 casino.add(monFrame);
 
-const mCvs = document.createElement('canvas'); mCvs.width = 256; mCvs.height = 192;
-const mCtx = mCvs.getContext('2d');
-mCtx.fillStyle = '#0b0b1a'; mCtx.fillRect(0, 0, 256, 192);
-mCtx.fillStyle = '#4ecdc4'; mCtx.font = 'bold 20px Arial'; mCtx.textAlign = 'center';
-mCtx.fillText('9MAYA CASINO', 128, 80);
-mCtx.fillStyle = '#ffd700'; mCtx.font = '14px Arial'; mCtx.fillText('ONLINE', 128, 110);
-const monScreen = new THREE.Mesh(new THREE.PlaneGeometry(1, 0.7), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(mCvs) }));
+// Экран монитора (текстура лого)
+const monScreen = new THREE.Mesh(new THREE.PlaneGeometry(1, 0.7), new THREE.MeshBasicMaterial({ map: logoTexture }));
 monScreen.position.set(-2, 1.5, -2.95);
 casino.add(monScreen);
 
+// Кровать
 const bedFrame = new THREE.Mesh(new THREE.BoxGeometry(3, 0.4, 4), new THREE.MeshStandardMaterial({ color: 0x4a3c2a }));
 bedFrame.position.set(2.5, 0.2, -1);
 bedFrame.castShadow = true;
@@ -136,19 +139,28 @@ const pillow = new THREE.Mesh(new THREE.BoxGeometry(1, 0.15, 0.6), new THREE.Mes
 pillow.position.set(2.5, 0.61, 0.8);
 casino.add(pillow);
 
-const pCvs = document.createElement('canvas'); pCvs.width = 200; pCvs.height = 250;
-const pCtx = pCvs.getContext('2d');
-pCtx.fillStyle = '#1a1a2e'; pCtx.fillRect(0, 0, 200, 250);
-pCtx.fillStyle = '#ffd700'; pCtx.font = 'bold 24px Arial'; pCtx.textAlign = 'center';
-pCtx.fillText('9MAYA', 100, 100);
-pCtx.font = '16px Arial'; pCtx.fillText('CASINO', 100, 140);
-const poster = new THREE.Mesh(new THREE.PlaneGeometry(2, 2.5), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(pCvs) }));
-poster.position.set(-roomW/2 + 0.16, 2.5, 1);
-poster.rotation.y = Math.PI / 2;
-casino.add(poster);
+// Постеры на стенах (используем картинки из папки i)
+const posterPositions = [
+    { x: -roomW/2 + 0.16, y: 2.5, z: 1, rotY: Math.PI/2, tex: posterTextures[0] },
+    { x: -roomW/2 + 0.16, y: 2.5, z: -1, rotY: Math.PI/2, tex: posterTextures[1] },
+    { x: roomW/2 - 0.16, y: 2.5, z: 1, rotY: -Math.PI/2, tex: posterTextures[2] },
+    { x: roomW/2 - 0.16, y: 2.5, z: -1, rotY: -Math.PI/2, tex: posterTextures[3] },
+    { x: 0, y: 2.5, z: -roomD/2 + 0.16, rotY: 0, tex: posterTextures[4] },
+    { x: -1.5, y: 2.5, z: -roomD/2 + 0.16, rotY: 0, tex: posterTextures[5] },
+    { x: 1.5, y: 2.5, z: -roomD/2 + 0.16, rotY: 0, tex: posterTextures[6] },
+];
+
+posterPositions.forEach(pos => {
+    const mat = new THREE.MeshBasicMaterial({ map: pos.tex });
+    const poster = new THREE.Mesh(new THREE.PlaneGeometry(1.8, 2.2), mat);
+    poster.position.set(pos.x, pos.y, pos.z);
+    poster.rotation.y = pos.rotY;
+    casino.add(poster);
+});
 
 scene.add(casino);
 
+// ---------- ФИЗИКА ----------
 const world = new CANNON.World();
 world.gravity.set(0, -9.82, 0);
 world.broadphase = new CANNON.SAPBroadphase(world);
@@ -191,6 +203,7 @@ scene.add(playerMesh);
 let yaw = 0, pitch = 0;
 const pitchMin = -Math.PI / 2.2, pitchMax = Math.PI / 2.2;
 
+// ---------- ДЖОЙСТИКИ ----------
 class Joystick {
     constructor(el, knob) {
         this.el = el; this.knob = knob; this.active = false; this.touchId = null;
@@ -238,6 +251,7 @@ class Joystick {
 const leftJoy = new Joystick(document.getElementById('joystick-left'), document.getElementById('leftKnob'));
 const rightJoy = new Joystick(document.getElementById('joystick-right'), document.getElementById('rightKnob'));
 
+// ---------- UI ----------
 let uiOpen = false, isInside = false, nearEntrance = false, nearComputer = false;
 const hintEl = document.getElementById('interact-hint');
 
@@ -325,6 +339,7 @@ renderer.domElement.addEventListener('touchstart', (e) => {
     }
 }, { passive: true });
 
+// ---------- АНИМАЦИЯ ----------
 const clock = new THREE.Clock();
 let frames = 0, lastFps = 0;
 

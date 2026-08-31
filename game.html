@@ -53,6 +53,11 @@
                 <div class="title">ПИРАМИДА</div>
                 <div class="desc">Найди камень x2</div>
             </div>
+            <div class="game-card" data-game="graph">
+                <div class="icon">📈</div>
+                <div class="title">ГРАФИК</div>
+                <div class="desc">Забери до падения!</div>
+            </div>
         </div>
         
         <div class="history-box">
@@ -64,6 +69,15 @@
                 <div style="color:#555; font-size:10px;">Пока пусто</div>
             </div>
         </div>
+
+        <div class="achievements-box">
+            <div class="history-header">
+                <div class="history-title">🏆 ДОСТИЖЕНИЯ</div>
+            </div>
+            <div class="achievements-list" id="achievementsList">
+                <div style="color:#555; font-size:10px;">Играй, чтобы открывать!</div>
+            </div>
+        </div>
     </div>
 
     <div class="game-modal" id="modal-slot">
@@ -71,9 +85,9 @@
             <button class="modal-close-btn" data-close>✕</button>
             <div class="modal-title">🎰 СЛОТ</div>
             <div class="slot-reels">
-                <div class="slot-reel" id="reel1">👁️</div>
-                <div class="slot-reel" id="reel2">👁️</div>
-                <div class="slot-reel" id="reel3">👁️</div>
+                <div class="slot-reel" id="reel1"><img src="i/1.jpg" alt=""></div>
+                <div class="slot-reel" id="reel2"><img src="i/2.jpg" alt=""></div>
+                <div class="slot-reel" id="reel3"><img src="i/3.jpg" alt=""></div>
             </div>
             <div class="bet-row">
                 <input type="text" class="bet-input" id="slotBet" value="10">
@@ -144,6 +158,32 @@
                 <span class="bet-currency">Ꚛ</span>
             </div>
             <div class="msg-box" id="pyrMsg"></div>
+        </div>
+    </div>
+
+    <!-- Новая игра ГРАФИК -->
+    <div class="game-modal" id="modal-graph">
+        <div class="modal-box">
+            <button class="modal-close-btn" data-close>✕</button>
+            <div class="modal-title">📈 ГРАФИК</div>
+            <div class="graph-display">
+                <div class="graph-coeff" id="graphCoeff">1.00x</div>
+                <div class="graph-bar" id="graphBar" style="width: 10%;"></div>
+            </div>
+            <div style="text-align:center; font-size:10px; color:#888;">Коэффициент растёт, успей забрать!</div>
+            <div class="bet-row">
+                <input type="text" class="bet-input" id="graphBet" value="10">
+                <span class="bet-currency">Ꚛ</span>
+            </div>
+            <div class="graph-actions">
+                <button class="action-btn" id="graphStart">СТАРТ</button>
+                <button class="action-btn" id="graphCashout" disabled>ЗАБРАТЬ</button>
+            </div>
+            <div class="msg-box" id="graphMsg"></div>
+            <div style="margin-top:6px; display:flex; justify-content:center; align-items:center; gap:8px; flex-wrap:wrap;">
+                <label style="font-size:10px; color:#888;">Авто-забор при x: <input type="text" id="graphAutoTarget" value="2.0" style="width:50px; background:#0b0b1a; border:1px solid #ffd700; color:#4ecdc4; padding:2px; border-radius:4px;"></label>
+                <button class="action-btn" id="graphAutoToggle" style="margin-top:0; padding:4px 10px; font-size:10px;">АВТО: ВЫКЛ</button>
+            </div>
         </div>
     </div>
 
