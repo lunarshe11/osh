@@ -32,8 +32,28 @@
     </div>
 
     <script>
+        const SUFFIXES = ['', 'k', 'm', 'b', 't', 'q', 'Q', 's', 'o', 'n', 'd', 'U', 'D', 'T', 'qd', 'Qn', 'Sx', 'Sp', 'Oc', 'No', 'V'];
+        function formatNumber(num) {
+            if (num === undefined || num === null || isNaN(num)) return '0';
+            if (num === 0) return '0';
+            let sign = '';
+            if (num < 0) { sign = '-'; num = -num; }
+            let index = 0;
+            while (num >= 1000 && index < SUFFIXES.length - 1) {
+                num /= 1000;
+                index++;
+            }
+            let formatted = (num % 1 === 0) ? num.toFixed(0) : num.toFixed(1);
+            if (parseFloat(formatted) >= 1000 && index < SUFFIXES.length - 1) {
+                num = parseFloat(formatted) / 1000;
+                index++;
+                formatted = (num % 1 === 0) ? num.toFixed(0) : num.toFixed(1);
+            }
+            return sign + formatted + SUFFIXES[index];
+        }
+
         const balance = parseInt(localStorage.getItem('maya_balance')) || 100;
-        document.getElementById('balance').textContent = balance + ' Ꚛ';
+        document.getElementById('balance').textContent = formatNumber(balance) + ' Ꚛ';
         
         document.getElementById('playBtn').addEventListener('click', () => {
             window.location.href = 'game.html';

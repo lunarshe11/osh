@@ -26,6 +26,71 @@ function playJackpot() {
     [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => playSound(f, 0.2, 'sine', 0.4), i * 100));
 }
 
+const SUFFIXES = [
+    '', 'k', 'm', 'b', 't', 'q', 'Q', 's', 'o', 'n',
+    'd', 'U', 'D', 'T', 'qd', 'Qn', 'Sx', 'Sp', 'Oc', 'No', 'V'
+];
+
+function formatNumber(num) {
+    if (num === undefined || num === null || isNaN(num)) return '0';
+    if (num === 0) return '0';
+    let sign = '';
+    if (num < 0) { sign = '-'; num = -num; }
+    let index = 0;
+    while (num >= 1000 && index < SUFFIXES.length - 1) {
+        num /= 1000;
+        index++;
+    }
+    let formatted = (num % 1 === 0) ? num.toFixed(0) : num.toFixed(1);
+    if (parseFloat(formatted) >= 1000 && index < SUFFIXES.length - 1) {
+        num = parseFloat(formatted) / 1000;
+        index++;
+        formatted = (num % 1 === 0) ? num.toFixed(0) : num.toFixed(1);
+    }
+    return sign + formatted + SUFFIXES[index];
+}
+
+function parseNumber(str) {
+    if (typeof str !== 'string') str = String(str);
+    str = str.trim().toLowerCase();
+    if (str === '') return NaN;
+    let suffix = '';
+    let numStr = str;
+    for (let i = SUFFIXES.length - 1; i >= 0; i--) {
+        const s = SUFFIXES[i];
+        if (s === '') continue;
+        if (str.endsWith(s)) {
+            suffix = s;
+            numStr = str.slice(0, -s.length);
+            break;
+        }
+    }
+    const num = parseFloat(numStr);
+    if (isNaN(num)) return NaN;
+    const index = SUFFIXES.indexOf(suffix);
+    if (index === -1) return num;
+    return num * Math.pow(1000, index);
+}
+
+function setupBetInputs() {
+    document.querySelectorAll('.bet-input').forEach(input => {
+        input.addEventListener('blur', function() {
+            const val = parseNumber(this.value);
+            if (!isNaN(val) && val >= 10) {
+                this.value = formatNumber(Math.floor(val));
+            } else {
+                this.value = formatNumber(10);
+            }
+        });
+        input.addEventListener('focus', function() {
+            const val = parseNumber(this.value);
+            if (!isNaN(val)) {
+                this.value = String(Math.floor(val));
+            }
+        });
+    });
+}
+
 let state = {
     balance: parseInt(localStorage.getItem('maya_balance')) || 100,
     history: JSON.parse(localStorage.getItem('maya_history') || '[]'),
@@ -47,8 +112,8 @@ function saveState() {
 function updateUI() {
     const hudBal = document.getElementById('hudBalance');
     const uiBal = document.getElementById('uiBalance');
-    if (hudBal) hudBal.textContent = state.balance;
-    if (uiBal) uiBal.textContent = state.balance;
+    if (hudBal) hudBal.textContent = formatNumber(state.balance);
+    if (uiBal) uiBal.textContent = formatNumber(state.balance);
     const bb = document.getElementById('bonusBar');
     if (bb) {
         if (state.bonusMult > 1) {
@@ -76,7 +141,7 @@ function renderHistory() {
         return;
     }
     list.innerHTML = state.history.map(h =>
-        `<div class="history-item ${h.win ? 'win' : 'lose'}">${h.game} ${h.win ? '+' : '-'}${h.amount}</div>`
+        `<div class="history-item ${h.win ? 'win' : 'lose'}">${h.game} ${h.win ? '+' : '-'}${formatNumber(h.amount)}</div>`
     ).join('');
 }
 
@@ -110,17 +175,43 @@ function checkDebt() {
 }
 
 function getBet(inputId) {
-    const val = parseInt(document.getElementById(inputId).value);
+    const input = document.getElementById(inputId);
+    const val = parseNumber(input.value);
     if (isNaN(val) || val < 10) return 10;
-    return val;
+    return Math.floor(val);
 }
 
 function validateBet(inputId) {
     const input = document.getElementById(inputId);
-    let val = parseInt(input.value);
+    let val = parseNumber(input.value);
     if (isNaN(val) || val < 10) val = 10;
     if (val > state.balance) val = state.balance;
-    input.value = val;
+    input.value = formatNumber(Math.floor(val));
+}
+
+function getWheelAttempts() {
+    const today = new Date().toISOString().slice(0,10);
+    const storedDate = localStorage.getItem('wheel_date');
+    const storedCount = parseInt(localStorage.getItem('wheel_count')) || 0;
+    if (storedDate !== today) {
+        localStorage.setItem('wheel_date', today);
+        localStorage.setItem('wheel_count', '0');
+        return 0;
+    }
+    return storedCount;
+}
+
+function incrementWheelAttempts() {
+    const today = new Date().toISOString().slice(0,10);
+    const storedDate = localStorage.getItem('wheel_date');
+    let count = parseInt(localStorage.getItem('wheel_count')) || 0;
+    if (storedDate !== today) {
+        count = 0;
+        localStorage.setItem('wheel_date', today);
+    }
+    count++;
+    localStorage.setItem('wheel_count', count.toString());
+    return count;
 }
 
 const slotSymbols = ['', '🍋', '🍊', '⭐', '💎', '👁️'];
@@ -130,8 +221,8 @@ function initSlot() {
     const input = document.getElementById('slotBet');
     input.addEventListener('change', () => validateBet('slotBet'));
     input.addEventListener('input', () => {
-        let val = parseInt(input.value);
-        if (val > state.balance) input.value = state.balance;
+        let val = parseNumber(input.value);
+        if (val > state.balance) input.value = formatNumber(state.balance);
     });
 
     document.getElementById('slotSpin').addEventListener('click', () => {
@@ -151,10 +242,10 @@ function initSlot() {
                 let win = 0, msg = '', type = 'lose';
                 if (res[0] === res[1] && res[1] === res[2]) {
                     win = applyBonus(bet * slotValues[res[0]]); state.balance += win;
-                    msg = 'ДЖЕКПОТ! +' + win + ' Ꚛ'; type = 'win'; playJackpot();
+                    msg = 'ДЖЕКПОТ! +' + formatNumber(win) + ' Ꚛ'; type = 'win'; playJackpot();
                 } else if (res[0] === res[1] || res[1] === res[2] || res[0] === res[2]) {
                     win = applyBonus(bet * 2); state.balance += win;
-                    msg = 'Пара! +' + win + ' '; type = 'win'; playWin();
+                    msg = 'Пара! +' + formatNumber(win) + ' Ꚛ'; type = 'win'; playWin();
                 } else { msg = 'Пусто...'; type = 'lose'; playLose(); }
                 state.streak++;
                 if (state.streak >= 9) { state.bonusMult = [2, 3, 9][Math.floor(Math.random() * 3)]; state.streak = 0; }
@@ -180,27 +271,35 @@ function initWheel() {
     const input = document.getElementById('wheelBet');
     input.addEventListener('change', () => validateBet('wheelBet'));
     input.addEventListener('input', () => {
-        let val = parseInt(input.value);
-        if (val > state.balance) input.value = state.balance;
+        let val = parseNumber(input.value);
+        if (val > state.balance) input.value = formatNumber(state.balance);
     });
 
-    document.getElementById('wheelSpin').addEventListener('click', () => {
+    const spinBtn = document.getElementById('wheelSpin');
+    spinBtn.addEventListener('click', () => {
+        const attempts = getWheelAttempts();
+        if (attempts >= 3) {
+            showWheelMsg('Лимит 3 попытки в день!', 'lose');
+            playLose();
+            return;
+        }
         const bet = getBet('wheelBet');
         if (bet > state.balance) { showWheelMsg('Мало Эхо!', 'lose'); playLose(); return; }
         state.balance -= bet; updateUI(); playClick();
-        const btn = document.getElementById('wheelSpin'); btn.disabled = true;
+        spinBtn.disabled = true;
         const segment = Math.floor(Math.random() * 9);
         const mult = wheelMults[segment];
         const extraSpins = 5 + Math.floor(Math.random() * 3);
-        wheelRotation += 360 * extraSpins + (segment * 40) + 20;
+        wheelRotation += 360 * extraSpins + (segment * 40);
         document.getElementById('wheelCircle').style.transform = 'rotate(' + wheelRotation + 'deg)';
         setTimeout(() => {
             const win = applyBonus(bet * mult);
             state.balance += win; state.streak++;
             if (state.streak >= 9) { state.bonusMult = [2, 3, 9][Math.floor(Math.random() * 3)]; state.streak = 0; }
             addHistory(true, win, 'КОЛЕСО'); updateUI();
-            showWheelMsg('x' + mult + '! +' + win + ' Ꚛ', 'win');
-            playWin(); btn.disabled = false;
+            showWheelMsg('x' + mult + '! +' + formatNumber(win) + ' Ꚛ', 'win');
+            playWin(); spinBtn.disabled = false;
+            incrementWheelAttempts();
         }, 3100);
     });
 }
@@ -220,8 +319,8 @@ function initRps() {
     const input = document.getElementById('rpsBet');
     input.addEventListener('change', () => validateBet('rpsBet'));
     input.addEventListener('input', () => {
-        let val = parseInt(input.value);
-        if (val > state.balance) input.value = state.balance;
+        let val = parseNumber(input.value);
+        if (val > state.balance) input.value = formatNumber(state.balance);
     });
 
     document.querySelectorAll('.rps-btn').forEach(btn => {
@@ -236,7 +335,7 @@ function initRps() {
             if (player === ai) { state.balance += bet; msg = 'Ничья!'; type = 'win'; playClick(); }
             else if (rpsBeats[player] === ai) {
                 win = applyBonus(bet * 3); state.balance += win;
-                msg = 'Победа! +' + win + ' Ꚛ'; type = 'win'; playWin();
+                msg = 'Победа! +' + formatNumber(win) + ' Ꚛ'; type = 'win'; playWin();
             } else { msg = 'Проигрыш...'; type = 'lose'; playLose(); }
             state.streak++;
             if (state.streak >= 9) { state.bonusMult = [2, 3, 9][Math.floor(Math.random() * 3)]; state.streak = 0; }
@@ -259,8 +358,8 @@ function initPyramid() {
     const input = document.getElementById('pyrBet');
     input.addEventListener('change', () => validateBet('pyrBet'));
     input.addEventListener('input', () => {
-        let val = parseInt(input.value);
-        if (val > state.balance) input.value = state.balance;
+        let val = parseNumber(input.value);
+        if (val > state.balance) input.value = formatNumber(state.balance);
     });
 
     document.querySelectorAll('.cup-btn').forEach(cup => {
@@ -279,7 +378,7 @@ function initPyramid() {
                 let win = 0, msg = '', type = 'lose';
                 if (chosen === correct) {
                     win = applyBonus(bet * 2); state.balance += win;
-                    msg = 'Угадал! +' + win + ' Ꚛ'; type = 'win'; playWin();
+                    msg = 'Угадал! +' + formatNumber(win) + ' Ꚛ'; type = 'win'; playWin();
                 } else { msg = 'Мимо...'; type = 'lose'; playLose(); }
                 state.streak++;
                 if (state.streak >= 9) { state.bonusMult = [2, 3, 9][Math.floor(Math.random() * 3)]; state.streak = 0; }
@@ -302,6 +401,7 @@ function showPyrMsg(text, type) {
 }
 
 export function initGames() {
+    setupBetInputs();
     initSlot();
     initWheel();
     initRps();
@@ -315,5 +415,7 @@ export {
     playClick,
     playWin,
     playLose,
-    playJackpot
+    playJackpot,
+    formatNumber,
+    parseNumber
 };

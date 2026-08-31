@@ -164,6 +164,7 @@ canvas { display: block; }
     text-align: center;
     font-family: Arial, sans-serif;
     outline: none;
+    min-width: 90px;
 }
 .bet-input:focus {
     border-color: #4ecdc4;
